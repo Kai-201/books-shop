@@ -52,6 +52,13 @@ public class BsCartController {
         return bsCartService.deleteCartByUserId(userId);
     }
 
+    // 更新购物车项数量
+    @PostMapping("/updateNum")
+    @ResponseBody
+    public int updateCartNum(@RequestBody BsCart bsCart) {
+        return bsCartService.updateCart(bsCart);
+    }
+
     /**
      * 购物车页面跳转
      */

@@ -7,16 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>后台管理</title>
     <link rel="stylesheet" href="../static/layui/css/layui.css">
+    <link rel="stylesheet" href="../static/layui/css/custom-theme.css">
     <script src="../static/js/jquery-3.3.1.min.js"></script>
     <script src="../static/layui/layui.js"></script>
-    <style>
-        #image{
-            width: 92px;
-            height: 92px;
-            margin: 10px;
-            border: 0.5px solid black;
-        }
-    </style>
     <script>
         $(function () {
             layui.use('element', function(){
@@ -58,6 +51,7 @@
                 "                <td>￥ "+price+"</td>\n" +
                 "                <td>"+isbn+"</td>\n" +
                 "                <td>"+uploaderName+"</td>\n" +
+                "                <td>"+bookNum+"</td>\n" +
                 "                <td>\n" +
                 "                    <button class=\"layui-btn layui-btn-xs\" onclick=\"editBook('"+bookId+"', '"+bookname+"', '"+author+"', '"+classId+"', '"+pressNum+"', '"+price+"', '"+url+"', '"+province+"', '"+bookNum+"', '"+bookBt+"', '"+isbn+"')\">修改</button>\n" +
                 "                    <button class=\"layui-btn layui-btn-danger layui-btn-xs\" onclick=\"deleteBook('"+bookId+"', this)\">删除</button>\n" +
@@ -92,9 +86,6 @@
             
             // 修改书籍函数
             window.editBook = function(bookId, bookname, author, classId, pressNum, price, cover, province, bookNum, bookBt, isbn) {
-                // 切换到修改书籍标签页
-                $('.layui-tab-title li').eq(2).click();
-                
                 // 填充表单数据
                 $('input[name="edit_bsBookid"]').val(bookId);
                 $('input[name="edit_bsBooksn"]').val(isbn);
@@ -107,9 +98,19 @@
                 $('input[name="edit_bsBooksnum"]').val(bookNum);
                 $('input[name="edit_bsBookbt"]').val(bookBt);
                 $('#edit_image').attr('src', cover);
-                
-                // 重新渲染表单
                 layui.form.render();
+                // 弹窗显示修改表单（用jQuery对象，关闭后还原）
+                var $modal = $('.edit-book-modal');
+                layer.open({
+                    type: 1,
+                    title: '修改书籍',
+                    area: ['600px', '600px'],
+                    content: $modal.show(),
+                    end: function() {
+                        // 关闭弹窗后把表单还原回页面底部
+                        $('body').append($modal.hide());
+                    }
+                });
             };
             
             // 删除书籍函数
@@ -395,10 +396,7 @@
                     edit_bsProvince: $('input[name="edit_bsProvince"]').val(),
                     edit_bsBooksnum: $('input[name="edit_bsBooksnum"]').val()
                 };
-                
                 let img = $("#edit_image").attr('src') || '';
-                
-                // 处理空字段，为NOT NULL字段提供默认值
                 var bookData = {
                     bsBookid: formData.edit_bsBookid,
                     bsBooksn: formData.edit_bsBooksn || 'BK001',
@@ -414,8 +412,6 @@
                     bsUploaderid: 1,
                     bsUploadername: '管理员'
                 };
-                
-                // 只验证必填字段
                 if (!bookData.bsBookname || bookData.bsBookname.trim() === '') {
                     layer.msg('图书名称不能为空', {icon: 2});
                     return;
@@ -428,10 +424,8 @@
                     layer.msg('图书数量必须大于0', {icon: 2});
                     return;
                 }
-                
                 var jsonData = JSON.stringify(bookData);
                 console.log("修改书籍数据:", jsonData);
-                
                 $.ajax({
                     url:"updateBook",
                     contentType:"application/json;charset=UTF-8",
@@ -481,7 +475,6 @@
             <ul class="layui-tab-title">
                 <li class="layui-this">查看所有书籍</li>
                 <li>添加书籍</li>
-                <li>修改书籍</li>
             </ul>
             <div class="layui-tab-content" style="height: 800px;">
                 <div id="selectAll" class="layui-tab-item layui-show">
@@ -500,6 +493,7 @@
                             <th>价格</th>
                             <th>ISBN</th>
                             <th>上传者</th>
+                            <th>剩余数量</th>
                             <th>操作</th>
                         </tr>
                         </thead>
@@ -588,92 +582,82 @@
                         </div>
                     </form>
                 </div>
-                <div class="layui-tab-item">
-                    <form class="layui-form" lay-filter="editForm" method="post">
-                        <input type="hidden" name="edit_bsBookid">
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">图书编号</label>
-                            <div class="layui-input-block">
-                                <input type="text" name="edit_bsBooksn"
-                                       placeholder="请输入图书编号"  autocomplete="off"
-                                       class="layui-input"/>
-                            </div>
-                        </div>
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">图书名称*</label>
-                            <div class="layui-input-block">
-                                <input type="text" name="edit_bsBookname"
-                                       placeholder="请输入图书名称"  autocomplete="off"
-                                       class="layui-input" required/>
-                            </div>
-                        </div>
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">图书作者</label>
-                            <div class="layui-input-block">
-                                <input type="text" name="edit_bsBookauthor"
-                                       placeholder="请输入图书作者"
-                                       autocomplete="off" class="layui-input">
-                            </div>
-                        </div>
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">图书类别id</label>
-                            <div class="layui-input-block">
-                                <input type="number" name="edit_bsBookclassid"
-                                       placeholder="请输入图书类别id" autocomplete="off"
-                                       class="layui-input">
-                            </div>
-                        </div>
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">图书出版日期</label>
-                            <div class="layui-inline">
-                                <input type="text" name="edit_bsBookbt"
-                                       class="layui-input" id="edit_test1">
-                            </div>
-                        </div>
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">图书出版社编号</label>
-                            <div class="layui-input-block">
-                                <input type="text" name="edit_bsPressnum"
-                                       placeholder="请输入出版社编号"  autocomplete="off"
-                                       class="layui-input"/>
-                            </div>
-                        </div>
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">图书价格*</label>
-                            <div class="layui-input-block">
-                                <input type="number" name="edit_bsBookprice" step="0.01" placeholder="请输入" autocomplete="off" class="layui-input" required>
-                            </div>
-                        </div>
-                        <div class="layui-form-item">
-                            <img id="edit_image" name="edit_image" src="" alt="" style="width: 100px; height: 120px; margin: 10px;">
-                            <label class="layui-form-label">图书照片</label>
-                            <div class="layui-input-block">
-                                <input type="file" name="edit_bsBookcover" value="选择图片" accept="image/*" multiple="">
-                            </div>
-                        </div>
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">所在省份</label>
-                            <div class="layui-input-block">
-                                <input type="text" name="edit_bsProvince" placeholder="请输入" autocomplete="off" class="layui-input">
-                            </div>
-                        </div>
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">书籍数量*</label>
-                            <div class="layui-input-block">
-                                <input type="number" name="edit_bsBooksnum" placeholder="请输入" autocomplete="off" class="layui-input" required>
-                            </div>
-                        </div>
-                        <div class="layui-form-item">
-                            <div class="layui-input-block">
-                                <button type="button" class="layui-btn" onclick="submitUpdateBook()">立即修改</button>
-                                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
             </div>
         </div>
     </div>
+</div>
+<!-- 修改书籍弹窗表单 -->
+<div class="edit-book-modal" style="display:none;">
+    <form class="layui-form" lay-filter="editForm" method="post" style="padding:24px 24px 0 24px;">
+        <input type="hidden" name="edit_bsBookid">
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书编号</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsBooksn" placeholder="请输入图书编号" autocomplete="off" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书名称*</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsBookname" placeholder="请输入图书名称" autocomplete="off" class="layui-input" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书作者</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsBookauthor" placeholder="请输入图书作者" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书类别id</label>
+            <div class="layui-input-block">
+                <input type="number" name="edit_bsBookclassid" placeholder="请输入图书类别id" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书出版社编号</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsPressnum" placeholder="请输入出版社编号" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书价格*</label>
+            <div class="layui-input-block">
+                <input type="number" name="edit_bsBookprice" placeholder="请输入价格" autocomplete="off" class="layui-input" required>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">所在省份</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsProvince" placeholder="请输入" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">书籍数量*</label>
+            <div class="layui-input-block">
+                <input type="number" name="edit_bsBooksnum" placeholder="请输入" autocomplete="off" class="layui-input" required>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">简介</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsBookbt" placeholder="请输入简介" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">封面</label>
+            <div class="layui-input-block">
+                <img id="edit_image" name="edit_image" src="" alt="" style="width: 100px; height: 120px; margin: 10px;">
+                <input type="file" name="edit_bsBookcover" value="选择图片" accept="image/*" multiple="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn" onclick="submitUpdateBook()">立即修改</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
 </div>
 <script>
 // 退出登录

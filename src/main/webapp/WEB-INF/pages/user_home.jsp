@@ -7,66 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>用户首页</title>
     <link rel="stylesheet" href="../static/layui/css/layui.css">
+    <link rel="stylesheet" href="../static/layui/css/custom-theme.css">
     <script src="../static/js/jquery-3.3.1.min.js"></script>
     <script src="../static/layui/layui.js"></script>
-    <style>
-        .header-section {
-            background: #f8f8f8;
-            padding: 20px 0;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #e6e6e6;
-        }
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .header-title {
-            margin: 0;
-            font-size: 24px;
-            color: #333;
-        }
-        .header-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .book-list { margin: 30px auto; max-width: 900px; }
-        .book-item { 
-            border-bottom: 1px solid #eee; 
-            padding: 20px 0; 
-            display: flex; 
-            align-items: center;
-            min-height: 120px;
-        }
-        .book-cover { 
-            width: 80px; 
-            height: 100px; 
-            margin-right: 20px;
-            flex-shrink: 0;
-        }
-        .book-info { 
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .cart-btn { 
-            margin-left: 20px; 
-            align-self: center;
-            flex-shrink: 0;
-            width: 100px;
-            height: 32px;
-            line-height: 32px;
-            padding: 0 15px;
-        }
-        .book-item .layui-btn {
-            height: 32px;
-            line-height: 32px;
-            padding: 0 15px;
-        }
-    </style>
 </head>
 <body>
 <div class="layui-container">

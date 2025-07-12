@@ -6,15 +6,30 @@ import cn.lht.service.BsCartService;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.List;
+import cn.lht.dao.BsBooksDao;
+import cn.lht.entity.BsBooks;
 
 @Service("bsCartService")
 public class BsCartServiceImpl implements BsCartService {
     @Resource
     private BsCartDao bsCartDao;
+    @Resource
+    private BsBooksDao bsBooksDao;
 
     @Override
     public List<BsCart> getCartByUserId(Integer bsUserId) {
-        return bsCartDao.queryByUserId(bsUserId);
+        List<BsCart> cartList = bsCartDao.queryByUserId(bsUserId);
+        for (BsCart cart : cartList) {
+            BsBooks book = bsBooksDao.queryById(cart.getBsGoodsId());
+            if (book != null) {
+                cart.setBsGoodsName(book.getBsBookname());
+                cart.setBsBookprice(book.getBsBookprice());
+            } else {
+                cart.setBsGoodsName("未知商品");
+                cart.setBsBookprice(0.0);
+            }
+        }
+        return cartList;
     }
 
     @Override

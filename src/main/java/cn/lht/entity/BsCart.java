@@ -17,6 +17,10 @@ public class BsCart implements Serializable {
     private Integer bsGoodsId;
     /** 商品数量 */
     private Integer bsCartNum;
+    /** 商品名称（仅用于视图展示） */
+    private String bsGoodsName;
+    /** 商品单价（仅用于视图展示） */
+    private Double bsBookprice;
 
     public Integer getBsCartId() { return bsCartId; }
     public void setBsCartId(Integer bsCartId) { this.bsCartId = bsCartId; }
@@ -28,4 +32,8 @@ public class BsCart implements Serializable {
     public void setBsGoodsId(Integer bsGoodsId) { this.bsGoodsId = bsGoodsId; }
     public Integer getBsCartNum() { return bsCartNum; }
     public void setBsCartNum(Integer bsCartNum) { this.bsCartNum = bsCartNum; }
+    public String getBsGoodsName() { return bsGoodsName; }
+    public void setBsGoodsName(String bsGoodsName) { this.bsGoodsName = bsGoodsName; }
+    public Double getBsBookprice() { return bsBookprice; }
+    public void setBsBookprice(Double bsBookprice) { this.bsBookprice = bsBookprice; }
 } 

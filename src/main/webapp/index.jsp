@@ -8,17 +8,17 @@
 <script src="static/layui/layui.js"></script>
 <script type="text/javascript">
 $(function () {
-	// 切换登录类型
-	$("#switchType").click(function(){
-		var type = $(this).attr("data-type");
+	// Tab切换
+	$('.login-tab').click(function(){
+		$('.login-tab').removeClass('active');
+		$(this).addClass('active');
+		var type = $(this).data('type');
 		if(type=="admin"){
-			$(this).attr("data-type","user").text("切换为管理员登录");
-			$("#loginTitle").text("用户登录");
-			$("#loginForm").attr("data-type","user");
+			$('#loginTitle').text('管理员登录');
+			$('#loginForm').attr('data-type','admin');
 		}else{
-			$(this).attr("data-type","admin").text("切换为用户登录");
-			$("#loginTitle").text("管理员登录");
-			$("#loginForm").attr("data-type","admin");
+			$('#loginTitle').text('用户登录');
+			$('#loginForm').attr('data-type','user');
 		}
 	});
 	$("#submit").click(function () {
@@ -97,6 +97,11 @@ $(function () {
 	<div class="w3_login">
 		<div class="w3_login_module">
 			<div class="module form-module">
+				<!-- 新增tab切换 -->
+				<div class="login-tabs">
+					<span class="login-tab active" data-type="admin">管理员登录</span>
+					<span class="login-tab" data-type="user">用户登录</span>
+				</div>
 				<div class="form" style="display: block;" class="layui-form" id="loginForm" data-type="admin" lay-filter="login">
 					<h2 id="loginTitle">管理员登录</h2>
 					<form action="" method="post">
@@ -105,7 +110,7 @@ $(function () {
 						<input type="submit" id="submit" lay-filter="*" value="登录">
 					</form>
 				</div>
-				<div class="cta"><a href="javascript:void(0);" id="switchType" data-type="admin">切换为用户登录</a></div>
+				<!-- 删除原有的切换按钮div.cta -->
 			</div>
 		</div>
 	</div>

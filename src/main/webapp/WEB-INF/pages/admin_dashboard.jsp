@@ -150,6 +150,79 @@
     </div>
 </div>
 
+<!-- 在页面底部添加弹窗表单结构（复用userBooks的edit-book-modal） -->
+<div class="edit-book-modal" style="display:none;">
+    <form class="layui-form" lay-filter="editForm" method="post" style="padding:24px 24px 0 24px;">
+        <input type="hidden" name="edit_bsBookid">
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书编号</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsBooksn" placeholder="请输入图书编号" autocomplete="off" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书名称*</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsBookname" placeholder="请输入图书名称" autocomplete="off" class="layui-input" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书作者</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsBookauthor" placeholder="请输入图书作者" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书类别id</label>
+            <div class="layui-input-block">
+                <input type="number" name="edit_bsBookclassid" placeholder="请输入图书类别id" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">出版社编号</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsPressnum" placeholder="请输入出版社编号" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">价格</label>
+            <div class="layui-input-block">
+                <input type="number" name="edit_bsBookprice" placeholder="请输入价格" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">所在省份</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsProvince" placeholder="请输入" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">书籍数量*</label>
+            <div class="layui-input-block">
+                <input type="number" name="edit_bsBooksnum" placeholder="请输入" autocomplete="off" class="layui-input" required>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">简介</label>
+            <div class="layui-input-block">
+                <input type="text" name="edit_bsBookbt" placeholder="请输入简介" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">封面</label>
+            <div class="layui-input-block">
+                <img id="edit_image" name="edit_image" src="" alt="" style="width: 100px; height: 120px; margin: 10px;">
+                <input type="file" name="edit_bsBookcover" value="选择图片" accept="image/*" multiple="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="submit" class="layui-btn" lay-submit lay-filter="updateBook">立即修改</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
 <script>
 var globalLayer; // 全局layer实例
 
@@ -185,8 +258,7 @@ layui.use(['element', 'layer'], function(){
     // 加载书籍数据
     function loadBooksData() {
         $.get('../bsBooks/selectAll', function(data) {
-            // 这里需要处理返回的数据
-            $('#booksTbody').html('<tr><td colspan="6">数据加载中...</td></tr>');
+            renderBooksTable(data);
         });
     }
     
@@ -272,6 +344,110 @@ layui.use(['element', 'layer'], function(){
             $('#ordersTbody').html(html);
         });
     }
+});
+
+// 在渲染书籍表格时，给每一行加上修改按钮，点击弹窗表单
+function renderBooksTable(data) {
+    var html = '';
+    if(data && data.length > 0) {
+        data.forEach(function(item) {
+            html += '<tr>' +
+                '<td><img src="' + (item.bsBookcover || '../static/images/default-book.png') + '" class="book-image" alt="封面"></td>' +
+                '<td>' + item.bsBookname + '</td>' +
+                '<td>' + item.bsBookauthor + '</td>' +
+                '<td>' + item.bsBookprice + '</td>' +
+                '<td>' + item.bsBooksn + '</td>' +
+                '<td>' +
+                '<button class="layui-btn layui-btn-xs" onclick="editBookAdmin(' +
+                '\'' + item.bsBookid + '\',\'' + (item.bsBooksn||'') + '\',\'' + (item.bsBookname||'') + '\',\'' + (item.bsBookauthor||'') + '\',\'' + (item.bsBookclassid||'') + '\',\'' + (item.bsPressnum||'') + '\',\'' + (item.bsBookprice||'') + '\',\'' + (item.bsBookcover||'') + '\',\'' + (item.bsProvince||'') + '\',\'' + (item.bsBooksnum||'') + '\',\'' + (item.bsBookbt||'') + '\')">修改</button>' +
+                '<button class="layui-btn layui-btn-danger layui-btn-xs" onclick="deleteBook(' + item.bsBookid + ')">删除</button>' +
+                '</td>' +
+                '</tr>';
+        });
+    } else {
+        html = '<tr><td colspan="6">暂无数据</td></tr>';
+    }
+    $('#booksTbody').html(html);
+}
+// 管理员修改书籍弹窗
+function editBookAdmin(bookId, booksn, bookname, author, classId, pressNum, price, cover, province, bookNum, bookBt) {
+    var $modal = $('.edit-book-modal');
+    $modal.find('input[name="edit_bsBookid"]').val(bookId);
+    $modal.find('input[name="edit_bsBooksn"]').val(booksn);
+    $modal.find('input[name="edit_bsBookname"]').val(bookname);
+    $modal.find('input[name="edit_bsBookauthor"]').val(author);
+    $modal.find('input[name="edit_bsBookclassid"]').val(classId);
+    $modal.find('input[name="edit_bsPressnum"]').val(pressNum);
+    $modal.find('input[name="edit_bsBookprice"]').val(price);
+    $modal.find('input[name="edit_bsProvince"]').val(province);
+    $modal.find('input[name="edit_bsBooksnum"]').val(bookNum);
+    $modal.find('input[name="edit_bsBookbt"]').val(bookBt);
+    $modal.find('#edit_image').attr('src', cover);
+    layui.form.render();
+    layer.open({
+        type: 1,
+        title: '修改书籍',
+        area: ['600px', '600px'],
+        content: $modal.show(),
+        end: function() {
+            $('body').append($modal.hide());
+        }
+    });
+}
+// 监听表单提交
+layui.use('form', function(){
+    var form = layui.form;
+    form.on('submit(updateBook)', function(data){
+        var formData = data.field;
+        let img = $('#edit_image').attr('src') || '';
+        var bookData = {
+            bsBookid: formData.edit_bsBookid,
+            bsBooksn: formData.edit_bsBooksn || 'BK001',
+            bsBookname: formData.edit_bsBookname || '',
+            bsBookauthor: formData.edit_bsBookauthor || '未知作者',
+            bsBookclassid: formData.edit_bsBookclassid || 103,
+            bsBookbt1: formData.edit_bsBookbt || '',
+            bsPressnum: formData.edit_bsPressnum || 'PUB001',
+            bsBookprice: formData.edit_bsBookprice || 0,
+            bsBookcover: img || 'https://s2.ax1x.com/2020/03/05/37nV6P.jpg',
+            bsProvince: formData.edit_bsProvince || '湖南',
+            bsBooksnum: formData.edit_bsBooksnum || 0
+        };
+        if (!bookData.bsBookname || bookData.bsBookname.trim() === '') {
+            layer.msg('图书名称不能为空', {icon: 2});
+            return false;
+        }
+        if (!bookData.bsBookprice || bookData.bsBookprice <= 0) {
+            layer.msg('图书价格必须大于0', {icon: 2});
+            return false;
+        }
+        if (!bookData.bsBooksnum || bookData.bsBooksnum <= 0) {
+            layer.msg('书籍数量必须大于0', {icon: 2});
+            return false;
+        }
+        var jsonData = JSON.stringify(bookData);
+        $.ajax({
+            url:"../bsBooks/updateBook",
+            contentType:"application/json;charset=UTF-8",
+            data:jsonData,
+            dataType:"json",
+            type:"post",
+            success:function (result) {
+                if(result > 0){
+                    layer.msg("书籍修改成功", {icon: 1});
+                    setTimeout(function() { 
+                        location.reload(); 
+                    }, 1000);
+                }else{
+                    layer.msg("书籍修改失败", {icon: 2});
+                }
+            },
+            error:function (xhr, status, error) {
+                layer.msg("修改请求失败: " + xhr.responseText, {icon: 2});
+            },
+        });
+        return false;
+    });
 });
 
 // 查看订单详情

@@ -66,9 +66,17 @@ public class BsOrderController {
         List<BsCart> cartList = bsCartService.getCartByUserId(userId);
         if(cartList == null || cartList.isEmpty()) return null;
         double total = 0;
+        // 先校验并扣减库存
         for(BsCart cart : cartList) {
             BsBooks book = bsBooksDao.queryById(cart.getBsGoodsId());
             if(book != null) {
+                // 校验库存
+                if (book.getBsBooksnum() < cart.getBsCartNum()) {
+                    throw new RuntimeException("库存不足，无法下单：" + book.getBsBookname());
+                }
+                // 扣减库存
+                book.setBsBooksnum(book.getBsBooksnum() - cart.getBsCartNum());
+                bsBooksDao.update(book);
                 total += book.getBsBookprice() * cart.getBsCartNum();
             }
         }

@@ -12,7 +12,8 @@
         .cart-list { margin: 30px auto; max-width: 900px; }
         .cart-item { border-bottom: 1px solid #eee; padding: 20px 0; display: flex; align-items: center; }
         .cart-info { flex: 1; }
-        .cart-btn { margin-left: 20px; }
+        .cart-num-area { min-width: 160px; text-align: right; }
+        .cart-btn { margin-left: 16px; }
         .cart-actions { margin: 20px 0; }
     </style>
 </head>
@@ -33,14 +34,22 @@ function loadCart() {
     $.get('../bsCart/list/' + userId, function(data) {
         var html = '';
         var total = 0;
+        var totalPrice = 0;
         if(data && data.length > 0) {
             data.forEach(function(item) {
                 html += '<div class="cart-item">'
-                    + '<div class="cart-info">商品ID: ' + item.bsGoodsId + ' 数量: ' + item.bsCartNum + '</div>'
+                    + '<div class="cart-info">商品名称：' + item.bsGoodsName + '</div>'
+                    + '<div class="cart-num-area">数量：'
+                    + '<button class="layui-btn layui-btn-xs cart-num-btn" onclick="changeNum(' + item.bsCartId + ',' + (item.bsCartNum-1) + ')">-</button>'
+                    + '<span style="margin:0 10px;">' + item.bsCartNum + '</span>'
+                    + '<button class="layui-btn layui-btn-xs cart-num-btn" onclick="changeNum(' + item.bsCartId + ',' + (item.bsCartNum+1) + ')">+</button>'
+                    + '</div>'
                     + '<button class="layui-btn layui-btn-danger cart-btn" onclick="deleteCart(' + item.bsCartId + ')">删除</button>'
                     + '</div>';
                 total += item.bsCartNum;
+                if(item.bsBookprice){ totalPrice += item.bsBookprice * item.bsCartNum; }
             });
+            html += '<div style="text-align:right;font-size:18px;margin-top:20px;">总价：<span id="cartTotalPrice">' + totalPrice.toFixed(2) + '</span> 元</div>';
         } else {
             html = '<p>购物车为空</p>';
         }
@@ -56,6 +65,18 @@ function deleteCart(cartId) {
                 var layer = layui.layer;
                 layer.msg('已删除');
             });
+            loadCart();
+        }
+    });
+}
+function changeNum(cartId, newNum) {
+    if(newNum < 1) return;
+    $.ajax({
+        url: '../bsCart/updateNum',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ bsCartId: cartId, bsCartNum: newNum, bsIsCheck: 1 }),
+        success: function() {
             loadCart();
         }
     });

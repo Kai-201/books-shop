@@ -139,8 +139,22 @@ public class BsBooksController {
         // 处理出版日期，如果为空则使用当前日期
         if (bsBooks.getBsBookbt1() != null && !bsBooks.getBsBookbt1().trim().isEmpty()) {
             System.out.println("处理出版日期: " + bsBooks.getBsBookbt1());
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            Date date = simpleDateFormat.parse(bsBooks.getBsBookbt1());
+            Date date = null;
+            ParseException parseException = null;
+            String[] patterns = {"yyyy-MM-dd", "EEE MMM dd HH:mm:ss zzz yyyy", "yyyy/MM/dd", "yyyy-MM-dd HH:mm:ss"};
+            for (String pattern : patterns) {
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat(pattern, java.util.Locale.ENGLISH);
+                    date = sdf.parse(bsBooks.getBsBookbt1());
+                    break;
+                } catch (ParseException e) {
+                    parseException = e;
+                }
+            }
+            if (date == null) {
+                System.out.println("日期解析失败，原始值：" + bsBooks.getBsBookbt1());
+                throw parseException;
+            }
             java.sql.Date resultDate = new java.sql.Date(date.getTime());
             bsBooks.setBsBookbt(resultDate);
         } else {
@@ -243,8 +257,22 @@ public class BsBooksController {
         // 处理出版日期，如果为空则使用当前日期
         if (bsBooks.getBsBookbt1() != null && !bsBooks.getBsBookbt1().trim().isEmpty()) {
             System.out.println("处理出版日期: " + bsBooks.getBsBookbt1());
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            Date date = simpleDateFormat.parse(bsBooks.getBsBookbt1());
+            Date date = null;
+            ParseException parseException = null;
+            String[] patterns = {"yyyy-MM-dd", "EEE MMM dd HH:mm:ss zzz yyyy", "yyyy/MM/dd", "yyyy-MM-dd HH:mm:ss"};
+            for (String pattern : patterns) {
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat(pattern, java.util.Locale.ENGLISH);
+                    date = sdf.parse(bsBooks.getBsBookbt1());
+                    break;
+                } catch (ParseException e) {
+                    parseException = e;
+                }
+            }
+            if (date == null) {
+                System.out.println("日期解析失败，原始值：" + bsBooks.getBsBookbt1());
+                throw parseException;
+            }
             java.sql.Date resultDate = new java.sql.Date(date.getTime());
             bsBooks.setBsBookbt(resultDate);
         } else {
