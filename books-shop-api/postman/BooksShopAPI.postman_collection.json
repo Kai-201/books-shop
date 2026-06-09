@@ -1,0 +1,373 @@
+{
+  "info": {
+    "name": "二手书交易系统 API",
+    "description": "Books Shop API 接口测试集合\n\n使用步骤：\n1. 先运行「01-认证」中的登录接口\n2. Token 会自动保存到集合变量\n3. 再测试其他接口",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api" },
+    { "key": "userToken", "value": "" },
+    { "key": "adminToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01-认证",
+      "item": [
+        {
+          "name": "用户登录",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.test('登录成功', function() { pm.expect(json.code).to.eql(200); });",
+                "if (json.code === 200 && json.data.token) {",
+                "    pm.collectionVariables.set('userToken', json.data.token);",
+                "    console.log('userToken 已保存');",
+                "}"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loginName\": \"user1\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/user/login"
+          }
+        },
+        {
+          "name": "管理员登录",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.test('登录成功', function() { pm.expect(json.code).to.eql(200); });",
+                "if (json.code === 200 && json.data.token) {",
+                "    pm.collectionVariables.set('adminToken', json.data.token);",
+                "    console.log('adminToken 已保存');",
+                "}"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loginName\": \"admin\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/admin/login"
+          }
+        },
+        {
+          "name": "用户注册",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loginName\": \"testuser\",\n  \"password\": \"123456\",\n  \"username\": \"测试用户\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/user/register"
+          }
+        },
+        {
+          "name": "登录失败-密码错误",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('应返回错误', function() {",
+                "    pm.expect(pm.response.json().code).to.not.eql(200);",
+                "});"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loginName\": \"user1\",\n  \"password\": \"wrong\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/user/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02-图书（公开）",
+      "item": [
+        {
+          "name": "图书列表",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/books"
+          }
+        },
+        {
+          "name": "图书分页",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/books/page?page=1&size=10&keyword=Java",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "page"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "size", "value": "10" },
+                { "key": "keyword", "value": "Java" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "图书详情",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/books/1"
+          }
+        },
+        {
+          "name": "分类列表",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categories"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03-购物车（用户）",
+      "item": [
+        {
+          "name": "加入购物车",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookId\": 1,\n  \"quantity\": 2\n}"
+            },
+            "url": "{{baseUrl}}/cart"
+          }
+        },
+        {
+          "name": "查看购物车",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": "{{baseUrl}}/cart"
+          }
+        },
+        {
+          "name": "修改数量",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 1\n}"
+            },
+            "url": "{{baseUrl}}/cart/1"
+          }
+        },
+        {
+          "name": "清空购物车",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": "{{baseUrl}}/cart"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04-订单",
+      "item": [
+        {
+          "name": "下单",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": "{{baseUrl}}/orders"
+          }
+        },
+        {
+          "name": "我的订单",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": "{{baseUrl}}/orders/my"
+          }
+        },
+        {
+          "name": "订单详情",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": "{{baseUrl}}/orders/1"
+          }
+        },
+        {
+          "name": "管理员-订单列表",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/orders?page=1&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "管理员-修改订单状态",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": 1\n}"
+            },
+            "url": "{{baseUrl}}/orders/1/status"
+          }
+        },
+        {
+          "name": "管理员-订单统计",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/orders/statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "05-用户管理（管理员）",
+      "item": [
+        {
+          "name": "用户列表",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "当前用户信息",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": "{{baseUrl}}/users/me"
+          }
+        },
+        {
+          "name": "新增用户",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loginName\": \"user3\",\n  \"password\": \"123456\",\n  \"username\": \"王五\",\n  \"phone\": \"13800000003\"\n}"
+            },
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "修改用户",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"张三三\",\n  \"phone\": \"13900000001\"\n}"
+            },
+            "url": "{{baseUrl}}/users/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "06-图书管理",
+      "item": [
+        {
+          "name": "管理员-新增图书",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookSn\": \"BK004\",\n  \"bookName\": \"Spring Boot 实战\",\n  \"bookAuthor\": \"测试作者\",\n  \"categoryId\": 2,\n  \"bookPrice\": 59.9,\n  \"booksNum\": 15\n}"
+            },
+            "url": "{{baseUrl}}/books"
+          }
+        },
+        {
+          "name": "用户-上传图书",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookSn\": \"BK005\",\n  \"bookName\": \"我的二手书\",\n  \"bookAuthor\": \"张三\",\n  \"categoryId\": 1,\n  \"bookPrice\": 20.0,\n  \"booksNum\": 1\n}"
+            },
+            "url": "{{baseUrl}}/books"
+          }
+        },
+        {
+          "name": "我的上传",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": "{{baseUrl}}/books/my"
+          }
+        },
+        {
+          "name": "管理员-新增分类",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"历史\"\n}"
+            },
+            "url": "{{baseUrl}}/categories"
+          }
+        }
+      ]
+    }
+  ]
+}
