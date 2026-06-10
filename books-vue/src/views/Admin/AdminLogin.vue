@@ -31,13 +31,14 @@ const auth = useAuthStore();
 const form = reactive({ loginName: "", password: "" });
 
 const login = async () => {
-  const res = await loginAdmin(form);
-  if (res.data.code === 200) {
-    auth.setAdminToken(res.data.data.token);
-    alert("管理员登录成功");
-    router.push("/admin");
-  } else {
-    alert(res.data.message || "登录失败");
+  try {
+    const res = await loginAdmin(form);
+    if (res.data.code === 200) {
+      auth.setAdminToken(res.data.data.token);
+      router.replace("/admin");
+    }
+  } catch {
+    // 错误已在响应拦截器中处理
   }
 };
 </script>

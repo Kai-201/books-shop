@@ -75,6 +75,8 @@ public class SecurityConfig {
                 // 公开浏览接口
                 .antMatchers(HttpMethod.GET, "/books", "/books/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/categories", "/categories/**").permitAll()
+                // 当前用户信息（任意登录用户可访问）
+                .antMatchers(HttpMethod.GET, "/users/me").authenticated()
                 // 用户管理仅管理员可访问
                 .antMatchers("/users/**").hasRole("admin")
                 // 图书增删改需要登录

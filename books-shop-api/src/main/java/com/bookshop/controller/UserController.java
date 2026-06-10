@@ -1,6 +1,7 @@
 package com.bookshop.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.bookshop.common.LoginUser;
 import com.bookshop.common.Result;
 import com.bookshop.common.validation.CreateGroup;
 import com.bookshop.common.validation.UpdateGroup;
@@ -8,13 +9,16 @@ import com.bookshop.dto.UserRequest;
 import com.bookshop.entity.User;
 import com.bookshop.security.SecurityUtils;
 import com.bookshop.service.UserService;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Min;
 import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -73,7 +77,9 @@ public class UserController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('admin')")
     public Result<Void> delete(@PathVariable Integer id) {
+        LoginUser user = SecurityUtils.getCurrentUser();
         userService.delete(id);
+        log.info("用户删除成功，userId={},operator={}", id , user.getLoginName());
         return Result.ok();
     }
 }

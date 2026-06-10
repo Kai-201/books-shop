@@ -5,6 +5,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +15,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
+@Slf4j
 @Component
 public class JwtUtil {
 
@@ -27,17 +29,11 @@ public class JwtUtil {
      * 获取签名 Key（新版本必须用 Key，不再用 String）
      */
     private Key getSigningKey() {
-        System.out.println("🔑 JwtUtil.getSigningKey() - secret = '" + secret + "', 长度 = " + (secret != null ? secret.length() : "null"));
+        log.debug("🔑 JwtUtil.getSigningKey() - secret = '" + secret + "', 长度 = " + (secret != null ? secret.length() : "null"));
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    /**
-     * 获取 secret 长度（用于调试）
-     */
-    public int getSecretLength() {
-        return secret != null ? secret.length() : -1;
-    }
-
+   
     /**
      * 生成 Token
      */

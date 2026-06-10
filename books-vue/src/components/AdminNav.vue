@@ -34,6 +34,6 @@ const isDashboard = computed(() => route.path === "/admin");
 
 const logout = () => {
   auth.logoutAdmin();
-  router.push("/admin/login");
+  router.replace("/admin/login");
 };
 </script>

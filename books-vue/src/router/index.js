@@ -47,16 +47,16 @@ router.beforeEach((to, from, next) => {
   const userToken = auth.userToken;
   const adminToken = auth.adminToken;
 
+  if (to.meta.requiresAdmin && !adminToken) {
+    return next({ path: "/admin/login", replace: true });
+  }
+
   if (to.meta.requiresAuth && !userToken) {
-    return next("/login");
+    return next({ path: "/login", replace: true });
   }
 
   if (to.meta.requiresAuthOrAdmin && !userToken && !adminToken) {
-    return next("/login");
-  }
-
-  if (to.meta.requiresAdmin && !adminToken) {
-    return next("/admin/login");
+    return next({ path: "/login", replace: true });
   }
 
   next();

@@ -5,12 +5,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -26,7 +28,7 @@ public class GlobalExceptionHandler {
         e.getBindingResult().getFieldErrors().forEach(fieldError ->
                 errors.put(fieldError.getField(), fieldError.getDefaultMessage())
         );
-        return Result.fail(400, "参数校验失败", errors);  // 需要 Result 加一个重载方法
+        return Result.fail(400, "参数校验失败", errors);  
     }
     /**
      * Spring Security 403 —— 权限不足
@@ -38,8 +40,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public Result<Void> handleException(Exception e) {
-        e.printStackTrace();
-        return Result.fail("服务器内部错误: " + e.getMessage());
+        log.error("系统异常", e);
+        return Result.fail("服务器内部错误:" );
     }
     @ExceptionHandler(ConstraintViolationException.class)
     public Result<Void> handleConstraintViolation(ConstraintViolationException e) {

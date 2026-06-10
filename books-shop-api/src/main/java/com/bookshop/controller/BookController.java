@@ -7,17 +7,18 @@ import com.bookshop.dto.BookRequest;
 import com.bookshop.dto.BookVO;
 import com.bookshop.security.SecurityUtils;
 import com.bookshop.service.BookService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("/books")
 public class BookController {
 
-    private final BookService bookService;
+    private final BookService bookService;  
 
     public BookController(BookService bookService) {
         this.bookService = bookService;
@@ -73,6 +74,7 @@ public class BookController {
     public Result<Void> delete(@PathVariable Integer id) {
         LoginUser user = SecurityUtils.getCurrentUser();
         bookService.delete(id, user.getId(), user.getRole());
+        log.info("删除图书: bookId={}, operator={}, role={}",id, user.getLoginName(), user.getRole());
         return Result.ok();
     }
 }

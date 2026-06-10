@@ -42,6 +42,6 @@ const isHome = computed(() => route.path === "/");
 
 const logout = () => {
   auth.logoutUser();
-  router.push("/login");
+  router.replace("/login");
 };
 </script>

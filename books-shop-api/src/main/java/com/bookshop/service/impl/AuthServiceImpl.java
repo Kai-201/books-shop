@@ -11,9 +11,12 @@ import com.bookshop.mapper.AdminMapper;
 import com.bookshop.mapper.UserMapper;
 import com.bookshop.service.AuthService;
 import com.bookshop.util.JwtUtil;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+@Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -35,12 +38,15 @@ public class AuthServiceImpl implements AuthService {
         Admin admin = adminMapper.selectOne(new LambdaQueryWrapper<Admin>()
                 .eq(Admin::getLoginName, request.getLoginName()));
         if (admin == null) {
+            log.warn("管理员登录失败，账号不存在: loginName={}", request.getLoginName());
             throw new BusinessException("管理员账号或密码错误");
         }
         // BCrypt 密码匹配
         if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
+            log.warn("管理员登录失败，密码错误: loginName={}", request.getLoginName());
             throw new BusinessException("管理员账号或密码错误");
         }
+        log.info("管理员登录成功，loginName={}", request.getLoginName());
         return buildResponse(admin.getId(), admin.getLoginName(), "管理员", "admin");
     }
 
@@ -50,12 +56,15 @@ public class AuthServiceImpl implements AuthService {
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
                 .eq(User::getLoginName, request.getLoginName()));
         if (user == null) {
+            log.warn("用户登录失败，账号不存在: loginName={}", request.getLoginName());
             throw new BusinessException("用户账号或密码错误");
         }
         // BCrypt 密码匹配
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            log.warn("用户登录失败，密码错误: loginName={}", request.getLoginName());
             throw new BusinessException("用户账号或密码错误");
         }
+        log.info("用户登录成功，loginName={}", request.getLoginName());
         return buildResponse(user.getId(), user.getLoginName(), user.getUsername(), "user");
     }
 
@@ -64,6 +73,7 @@ public class AuthServiceImpl implements AuthService {
         Long count = userMapper.selectCount(new LambdaQueryWrapper<User>()
                 .eq(User::getLoginName, request.getLoginName()));
         if (count > 0) {
+            log.warn("用户注册失败，账号已存在: loginName={}", request.getLoginName());
             throw new BusinessException("账号已存在");
         }
 
@@ -73,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setUsername(username != null ? username : request.getLoginName());
         userMapper.insert(user);
-
+        log.info("用户注册成功，loginName={}", request.getLoginName());
         return buildResponse(user.getId(), user.getLoginName(), user.getUsername(), "user");
     }
 

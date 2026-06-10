@@ -32,13 +32,14 @@ const auth = useAuthStore();
 const form = reactive({ loginName: "", password: "" });
 
 const login = async () => {
-  const res = await loginUser(form);
-  if (res.data.code === 200) {
-    auth.setUserToken(res.data.data.token, res.data.data);
-    alert("登录成功");
-    router.push("/");
-  } else {
-    alert(res.data.message || "登录失败");
+  try {
+    const res = await loginUser(form);
+    if (res.data.code === 200) {
+      auth.setUserToken(res.data.data.token, res.data.data);
+      router.replace("/");
+    }
+  } catch {
+    // 错误已在响应拦截器中处理
   }
 };
 </script>
