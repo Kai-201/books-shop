@@ -58,6 +58,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
 import AdminNav from "../../components/AdminNav.vue";
 import { getOrdersPage, updateOrderStatus, deleteOrder } from "../../api/order";
 
@@ -72,8 +73,7 @@ const loadOrders = async () => {
 
 const changeStatus = async (id, status) => {
   const res = await updateOrderStatus(id, Number(status));
-  if (res.data.code === 200) { alert("状态已更新"); loadOrders(); }
-  else alert(res.data.message || "更新失败");
+  if (res.data.code === 200) { ElMessage.success("状态已更新"); loadOrders(); }
 };
 
 const goDetail = (id) => router.push(`/orders/${id}`);
@@ -81,8 +81,7 @@ const goDetail = (id) => router.push(`/orders/${id}`);
 const removeOrder = async (id) => {
   if (!confirm("确定删除该订单吗？")) return;
   const res = await deleteOrder(id);
-  if (res.data.code === 200) { alert("删除成功"); loadOrders(); }
-  else alert(res.data.message || "删除失败");
+  if (res.data.code === 200) { ElMessage.success("删除成功"); loadOrders(); }
 };
 
 onMounted(loadOrders);

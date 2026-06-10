@@ -47,6 +47,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
+import { ElMessage } from "element-plus";
 import UserNav from "../components/UserNav.vue";
 import { getMyBooks, createBook, updateBook, deleteBook } from "../api/book";
 import { getCategories } from "../api/category";
@@ -90,12 +91,10 @@ const submit = async () => {
     : await createBook(payload);
 
   if (res.data.code === 200) {
-    alert(editingId.value ? "保存成功" : "发布成功");
+    ElMessage.success(editingId.value ? "保存成功" : "发布成功");
     resetForm();
     await loadData();
     inventory.bump();
-  } else {
-    alert(res.data.message || "操作失败");
   }
 };
 
@@ -114,11 +113,9 @@ const removeBook = async (id) => {
   if (!confirm("确定删除这本图书吗？")) return;
   const res = await deleteBook(id);
   if (res.data.code === 200) {
-    alert("删除成功");
+    ElMessage.success("删除成功");
     await loadData();
     inventory.bump();
-  } else {
-    alert(res.data.message || "删除失败");
   }
 };
 

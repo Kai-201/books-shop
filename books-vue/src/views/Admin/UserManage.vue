@@ -60,6 +60,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
+import { ElMessage } from "element-plus";
 import AdminNav from "../../components/AdminNav.vue";
 import { getUsersPage, createUser, updateUser, deleteUser } from "../../api/user";
 
@@ -88,15 +89,13 @@ const submit = async () => {
   const payload = { loginName: form.loginName, username: form.username, phone: form.phone, email: form.email };
   if (form.password) payload.password = form.password;
   const res = form.id ? await updateUser(form.id, payload) : await createUser({ ...payload, password: form.password });
-  if (res.data.code === 200) { alert("保存成功"); closeForm(); loadUsers(); }
-  else alert(res.data.message || "保存失败");
+  if (res.data.code === 200) { ElMessage.success("保存成功"); closeForm(); loadUsers(); }
 };
 
 const removeUser = async (id) => {
   if (!confirm("确定删除该用户吗？")) return;
   const res = await deleteUser(id);
-  if (res.data.code === 200) { alert("删除成功"); loadUsers(); }
-  else alert(res.data.message || "删除失败");
+  if (res.data.code === 200) { ElMessage.success("删除成功"); loadUsers(); }
 };
 
 onMounted(loadUsers);

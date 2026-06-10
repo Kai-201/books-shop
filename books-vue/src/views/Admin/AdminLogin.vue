@@ -23,6 +23,7 @@
 <script setup>
 import { reactive } from "vue";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
 import { loginAdmin } from "../../api/auth";
 import { useAuthStore } from "../../stores/auth";
 
@@ -35,6 +36,7 @@ const login = async () => {
     const res = await loginAdmin(form);
     if (res.data.code === 200) {
       auth.setAdminToken(res.data.data.token);
+      ElMessage.success("管理员登录成功");
       router.replace("/admin");
     }
   } catch {

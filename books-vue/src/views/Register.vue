@@ -24,6 +24,7 @@
 <script setup>
 import { reactive } from "vue";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
 import { register } from "../api/auth";
 import { useAuthStore } from "../stores/auth";
 
@@ -36,6 +37,7 @@ const submit = async () => {
     const res = await register(form);
     if (res.data.code === 200) {
       auth.setUserToken(res.data.data.token, res.data.data);
+      ElMessage.success("注册成功");
       router.replace("/");
     }
   } catch {

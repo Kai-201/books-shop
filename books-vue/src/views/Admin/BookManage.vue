@@ -90,6 +90,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
+import { ElMessage } from "element-plus";
 import AdminNav from "../../components/AdminNav.vue";
 import { getBooksPage, createBook, updateBook, deleteBook } from "../../api/book";
 import { getCategories, createCategory, deleteCategory } from "../../api/category";
@@ -130,14 +131,12 @@ const addCategory = async () => {
   if (!newCategory.value.trim()) return;
   const res = await createCategory(newCategory.value.trim());
   if (res.data.code === 200) { newCategory.value = ""; loadCategories(); }
-  else alert(res.data.message || "添加失败");
 };
 
 const removeCategory = async (id) => {
   if (!confirm("确定删除该分类吗？")) return;
   const res = await deleteCategory(id);
   if (res.data.code === 200) loadCategories();
-  else alert(res.data.message || "删除失败");
 };
 
 const openCreate = () => { resetForm(); showForm.value = true; };
@@ -151,15 +150,13 @@ const submit = async () => {
   const payload = { ...form };
   delete payload.id;
   const res = form.id ? await updateBook(form.id, payload) : await createBook(payload);
-  if (res.data.code === 200) { alert("保存成功"); closeForm(); loadBooks(); inventory.bump(); }
-  else alert(res.data.message || "保存失败");
+  if (res.data.code === 200) { ElMessage.success("保存成功"); closeForm(); loadBooks(); inventory.bump(); }
 };
 
 const removeBook = async (id) => {
   if (!confirm("确定删除该图书吗？")) return;
   const res = await deleteBook(id);
-  if (res.data.code === 200) { alert("删除成功"); loadBooks(); inventory.bump(); }
-  else alert(res.data.message || "删除失败");
+  if (res.data.code === 200) { ElMessage.success("删除成功"); loadBooks(); inventory.bump(); }
 };
 
 onMounted(async () => { await loadCategories(); await loadBooks(); });

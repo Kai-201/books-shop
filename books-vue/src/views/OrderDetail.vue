@@ -50,8 +50,6 @@ const loadOrder = async () => {
   const res = await getOrderById(route.params.id);
   if (res.data.code === 200) {
     order.value = res.data.data;
-  } else {
-    alert(res.data.message || "获取订单失败");
   }
 };
 

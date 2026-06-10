@@ -31,8 +31,6 @@ const loadProfile = async () => {
   const res = await getMe();
   if (res.data.code === 200) {
     user.value = res.data.data;
-  } else {
-    alert(res.data.message || "获取个人信息失败");
   }
 };
 

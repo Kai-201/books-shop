@@ -25,6 +25,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
 import UserNav from "../components/UserNav.vue";
 import { getBookById } from "../api/book";
 import { addCart } from "../api/cart";
@@ -52,7 +53,6 @@ const loadBook = async () => {
 
 const addToCart = async () => {
   if (!auth.isLoggedIn) {
-    alert("请先登录");
     router.push("/login");
     return;
   }
@@ -60,9 +60,7 @@ const addToCart = async () => {
 
   const res = await addCart({ bookId: book.value.id, quantity: 1 });
   if (res.data.code === 200) {
-    alert("已加入购物车");
-  } else {
-    alert("失败：" + (res.data.message || "操作失败"));
+    ElMessage.success("已加入购物车");
   }
 };
 

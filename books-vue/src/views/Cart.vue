@@ -42,6 +42,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
 import UserNav from "../components/UserNav.vue";
 import { getCart, updateCartQuantity, deleteCartItem, clearCart } from "../api/cart";
 import { createOrder } from "../api/order";
@@ -79,11 +80,9 @@ const loadCart = async () => {
       );
       cartItems.value = enriched;
       totalAmount.value = res.data.data.totalAmount || 0;
-    } else {
-      alert("获取购物车失败：" + (res.data.message || ""));
     }
   } catch {
-    alert("获取购物车失败，请检查登录状态");
+    // 错误已在响应拦截器中处理
   }
 };
 
@@ -91,7 +90,7 @@ const changeQty = async (item, num) => {
   const newQty = item.quantity + num;
   if (newQty <= 0) return;
   if (item.stock !== undefined && newQty > item.stock) {
-    alert("库存不足");
+    ElMessage.warning("库存不足");
     return;
   }
   const res = await updateCartQuantity(item.id, newQty);
@@ -101,7 +100,6 @@ const changeQty = async (item, num) => {
       .reduce((sum, i) => sum + Number(i.bookPrice) * i.quantity, 0)
       .toFixed(2);
   } else {
-    alert(res.data.message || "修改数量失败");
     loadCart();
   }
 };
@@ -109,7 +107,6 @@ const changeQty = async (item, num) => {
 const removeItem = async (id) => {
   const res = await deleteCartItem(id);
   if (res.data.code === 200) loadCart();
-  else alert(res.data.message || "删除失败");
 };
 
 const clearAll = async () => {
@@ -118,8 +115,6 @@ const clearAll = async () => {
   if (res.data.code === 200) {
     cartItems.value = [];
     totalAmount.value = 0;
-  } else {
-    alert(res.data.message || "清空失败");
   }
 };
 
@@ -127,10 +122,8 @@ const checkout = async () => {
   const res = await createOrder();
   if (res.data.code === 200) {
     inventory.bump();
-    alert("下单成功");
+    ElMessage.success("下单成功");
     router.push("/orders");
-  } else {
-    alert("下单失败：" + (res.data.message || ""));
   }
 };
 
