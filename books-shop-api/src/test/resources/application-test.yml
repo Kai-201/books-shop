@@ -14,5 +14,5 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
 
 jwt:
-  secret: test-jwt-secret-key
+  secret: test-jwt-secret-key-at-least-256-bits-long
   expire-hours: 24

@@ -3,10 +3,9 @@ package com.bookshop.controller;
 import com.bookshop.common.Result;
 import com.bookshop.entity.BookCategory;
 import com.bookshop.service.BookCategoryService;
-import com.bookshop.util.AuthHelper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -26,15 +25,15 @@ public class BookCategoryController {
     }
 
     @PostMapping
-    public Result<Void> create(HttpServletRequest request, @RequestBody Map<String, String> body) {
-        AuthHelper.requireAdmin(AuthHelper.currentUser(request));
+    @PreAuthorize("hasRole('admin')")
+    public Result<Void> create(@RequestBody Map<String, String> body) {
         categoryService.create(body.get("name"));
         return Result.ok();
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(HttpServletRequest request, @PathVariable Integer id) {
-        AuthHelper.requireAdmin(AuthHelper.currentUser(request));
+    @PreAuthorize("hasRole('admin')")
+    public Result<Void> delete(@PathVariable Integer id) {
         categoryService.delete(id);
         return Result.ok();
     }

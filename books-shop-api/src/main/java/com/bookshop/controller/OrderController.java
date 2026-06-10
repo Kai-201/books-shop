@@ -5,11 +5,11 @@ import com.bookshop.common.LoginUser;
 import com.bookshop.common.Result;
 import com.bookshop.dto.OrderVO;
 import com.bookshop.entity.OrderInfo;
+import com.bookshop.security.SecurityUtils;
 import com.bookshop.service.OrderService;
-import com.bookshop.util.AuthHelper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -24,52 +24,51 @@ public class OrderController {
     }
 
     @PostMapping
-    public Result<OrderInfo> create(HttpServletRequest request) {
-        LoginUser user = AuthHelper.currentUser(request);
-        AuthHelper.requireUser(user);
+    @PreAuthorize("hasRole('user')")
+    public Result<OrderInfo> create() {
+        LoginUser user = SecurityUtils.getCurrentUser();
         return Result.ok(orderService.createFromCart(user.getId()));
     }
 
     @GetMapping("/my")
-    public Result<List<OrderVO>> myOrders(HttpServletRequest request) {
-        LoginUser user = AuthHelper.currentUser(request);
-        AuthHelper.requireUser(user);
+    @PreAuthorize("hasRole('user')")
+    public Result<List<OrderVO>> myOrders() {
+        LoginUser user = SecurityUtils.getCurrentUser();
         return Result.ok(orderService.listByUser(user.getId()));
     }
 
     @GetMapping("/{id}")
-    public Result<OrderVO> detail(HttpServletRequest request, @PathVariable Integer id) {
-        LoginUser user = AuthHelper.currentUser(request);
+    public Result<OrderVO> detail(@PathVariable Integer id) {
+        LoginUser user = SecurityUtils.getCurrentUser();
         return Result.ok(orderService.getDetail(id, user.getId(), user.getRole()));
     }
 
     @GetMapping
-    public Result<Page<OrderVO>> page(HttpServletRequest request,
-                                      @RequestParam(defaultValue = "1") int page,
+    @PreAuthorize("hasRole('admin')")
+    public Result<Page<OrderVO>> page(@RequestParam(defaultValue = "1") int page,
                                       @RequestParam(defaultValue = "10") int size,
                                       @RequestParam(required = false) String keyword) {
-        AuthHelper.requireAdmin(AuthHelper.currentUser(request));
         return Result.ok(orderService.pageForAdmin(page, size, keyword));
     }
 
     @PutMapping("/{id}/status")
-    public Result<Void> updateStatus(HttpServletRequest request, @PathVariable Integer id,
+    @PreAuthorize("hasRole('admin')")
+    public Result<Void> updateStatus(@PathVariable Integer id,
                                      @RequestBody Map<String, Integer> body) {
-        AuthHelper.requireAdmin(AuthHelper.currentUser(request));
         orderService.updateStatus(id, body.get("status"));
         return Result.ok();
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(HttpServletRequest request, @PathVariable Integer id) {
-        AuthHelper.requireAdmin(AuthHelper.currentUser(request));
+    @PreAuthorize("hasRole('admin')")
+    public Result<Void> delete(@PathVariable Integer id) {
         orderService.delete(id);
         return Result.ok();
     }
 
     @GetMapping("/statistics")
-    public Result<Map<String, Object>> statistics(HttpServletRequest request) {
-        AuthHelper.requireAdmin(AuthHelper.currentUser(request));
+    @PreAuthorize("hasRole('admin')")
+    public Result<Map<String, Object>> statistics() {
         return Result.ok(orderService.statistics());
     }
 }

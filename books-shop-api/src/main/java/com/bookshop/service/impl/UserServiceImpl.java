@@ -58,9 +58,7 @@ public class UserServiceImpl implements UserService {
         if (count > 0) {
             throw new BusinessException("账号已存在");
         }
-        if (!StringUtils.hasText(request.getPassword())) {
-            throw new BusinessException("密码不能为空");
-        }
+
 
         User user = new User();
         copyProperties(request, user);
@@ -70,9 +68,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void update(UserRequest request) {
-        if (request.getId() == null) {
-            throw new BusinessException("用户ID不能为空");
-        }
         User existing = userMapper.selectById(request.getId());
         if (existing == null) {
             throw new BusinessException("用户不存在");

@@ -90,7 +90,7 @@ class ApiIntegrationTest {
     @DisplayName("未登录访问购物车应返回 401")
     void cartWithoutToken() throws Exception {
         mockMvc.perform(get("/cart"))
-                .andExpect(status().isOk())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(401));
     }
 
@@ -233,7 +233,7 @@ class ApiIntegrationTest {
     void userCannotAccessAdmin() throws Exception {
         mockMvc.perform(get("/users")
                         .header("Authorization", bearer(userToken)))
-                .andExpect(status().isOk())
+                .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value(403));
     }
 

@@ -27,11 +27,20 @@ public class Result<T> {
         result.setMessage(message);
         return result;
     }
-
     public static <T> Result<T> fail(int code, String message) {
         Result<T> result = new Result<>();
         result.setCode(code);
         result.setMessage(message);
         return result;
     }
+    public static <T> Result<T> fail(int code, String message, T data) {
+        Result<T> result = new Result<>();
+        result.setCode(code);
+        result.setMessage(message);
+        result.setData(data);
+        return result;
+    }
+
+
+
 }

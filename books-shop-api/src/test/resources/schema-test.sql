@@ -68,11 +68,12 @@ CREATE TABLE order_item (
     quantity  INT            NOT NULL
 );
 
-INSERT INTO admin (login_name, password, staff_no) VALUES ('admin', '123456', '001');
+-- 密码均为 BCrypt 加密后的 "123456"
+INSERT INTO admin (login_name, password, staff_no) VALUES ('admin', '$2b$10$rz4DoUL5.aGsydigkjIAFObrZzo7Y6eihlQt1lYyWqn5iAlp8.eha', '001');
 
 INSERT INTO user_info (login_name, password, username, phone, email) VALUES
-('user1', '123456', '张三', '13800000001', 'user1@test.com'),
-('user2', '123456', '李四', '13800000002', 'user2@test.com');
+('user1', '$2b$10$rz4DoUL5.aGsydigkjIAFObrZzo7Y6eihlQt1lYyWqn5iAlp8.eha', '张三', '13800000001', 'user1@test.com'),
+('user2', '$2b$10$rz4DoUL5.aGsydigkjIAFObrZzo7Y6eihlQt1lYyWqn5iAlp8.eha', '李四', '13800000002', 'user2@test.com');
 
 INSERT INTO book_category (name) VALUES
 ('文学'), ('计算机'), ('数学'), ('物理'), ('教育');
