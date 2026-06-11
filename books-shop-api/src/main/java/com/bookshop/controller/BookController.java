@@ -1,6 +1,7 @@
 package com.bookshop.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.bookshop.common.BusinessException;
 import com.bookshop.common.LoginUser;
 import com.bookshop.common.Result;
 import com.bookshop.dto.BookRequest;
@@ -47,7 +48,12 @@ public class BookController {
 
     @GetMapping("/{id}")
     public Result<BookVO> detail(@PathVariable Integer id) {
-        return Result.ok(bookService.getById(id));
+        BookVO book = bookService.getById(id);
+        if (book == null) {
+            throw new BusinessException("图书不存在");
+        }
+        return Result.ok(book);
+        
     }
 
     @PostMapping

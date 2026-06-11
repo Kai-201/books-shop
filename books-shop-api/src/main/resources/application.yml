@@ -11,6 +11,21 @@ spring:
     url: jdbc:mysql://localhost:3306/books_shop?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 9464.zkx
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  redis:
+    host: novel-anteater-121365.upstash.io         # 换成你的 Upstash endpoint
+    port: 6379
+    password: gQAAAAAAAdoVAAIgcDJlYjZiNzZkZTEwYjQ0YmM5YmZmZjllNzQ2MzdmOGE0NQ              # 换成你的 Upstash 密码
+    ssl: true                            # Upstash 要求 SSL
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8                    # 最大连接数
+        max-idle: 8                      # 最大空闲连接
+        min-idle: 0                      # 最小空闲连接
+        max-wait: -1ms                   # 获取连接最大等待时间，-1 无限等
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
