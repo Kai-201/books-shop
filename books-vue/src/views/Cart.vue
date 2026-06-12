@@ -122,8 +122,9 @@ const checkout = async () => {
   const res = await createOrder();
   if (res.data.code === 200) {
     inventory.bump();
-    ElMessage.success("下单成功");
-    router.push("/orders");
+    ElMessage.success("下单成功，请支付");
+    const orderId = res.data.data.id;
+    router.push(`/orders/${orderId}`);
   }
 };
 

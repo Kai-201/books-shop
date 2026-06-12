@@ -27,7 +27,18 @@
         </div>
       </div>
 
-      <button class="btn" :class="isAdmin ? 'btn-admin' : 'btn-secondary'" style="margin-top:1rem" @click="goBack">
+      <div v-if="order && order.status === 0" style="margin-top:1rem">
+        <button class="btn btn-primary" style="margin-right:0.5rem" @click="pay">
+          去支付
+        </button>
+        <button class="btn btn-danger" style="margin-right:0.5rem" @click="cancel">
+          取消订单
+        </button>
+        <button class="btn" :class="isAdmin ? 'btn-admin' : 'btn-secondary'" @click="goBack">
+          返回列表
+        </button>
+      </div>
+      <button v-else class="btn" :class="isAdmin ? 'btn-admin' : 'btn-secondary'" style="margin-top:1rem" @click="goBack">
         返回列表
       </button>
     </div>
@@ -37,9 +48,10 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
 import UserNav from "../components/UserNav.vue";
 import AdminNav from "../components/AdminNav.vue";
-import { getOrderById } from "../api/order";
+import { getOrderById, payOrder, cancelOrder } from "../api/order";
 
 const route = useRoute();
 const router = useRouter();
@@ -50,6 +62,23 @@ const loadOrder = async () => {
   const res = await getOrderById(route.params.id);
   if (res.data.code === 200) {
     order.value = res.data.data;
+  }
+};
+
+const pay = async () => {
+  const res = await payOrder(route.params.id);
+  if (res.data.code === 200) {
+    ElMessage.success("支付成功");
+    loadOrder();
+  }
+};
+
+const cancel = async () => {
+  if (!confirm("确定取消该订单吗？")) return;
+  const res = await cancelOrder(route.params.id);
+  if (res.data.code === 200) {
+    ElMessage.success("订单已取消");
+    loadOrder();
   }
 };
 

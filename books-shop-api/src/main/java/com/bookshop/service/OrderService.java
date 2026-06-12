@@ -22,4 +22,13 @@ public interface OrderService {
     void delete(Integer orderId);
 
     Map<String, Object> statistics();
+    /**
+     * 支付订单
+     */
+    void pay(Integer orderId, Integer userId);
+
+    /**
+     * 取消订单
+     */
+    void cancel(Integer orderId, Integer userId);
 }

@@ -14,3 +14,7 @@ export const updateOrderStatus = (id, status) =>
 export const deleteOrder = (id) => request.delete(`/orders/${id}`);
 
 export const getOrderStatistics = () => request.get("/orders/statistics");
+
+export const payOrder = (orderId) => request.post(`/payment/pay?orderId=${orderId}`);
+
+export const cancelOrder = (orderId) => request.put(`/orders/${orderId}/cancel`);

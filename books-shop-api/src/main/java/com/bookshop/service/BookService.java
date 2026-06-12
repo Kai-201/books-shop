@@ -43,6 +43,11 @@ public interface BookService {
 
 
     void delete(Integer id, Integer operatorId, String role);
+    /**
+    * 扣减库存（乐观锁防超卖）
+    * @return true=成功 false=库存不足
+    */
+    boolean deductStock(Integer bookId, int quantity);
 
 }
 

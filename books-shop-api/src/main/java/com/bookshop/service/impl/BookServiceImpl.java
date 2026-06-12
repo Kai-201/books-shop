@@ -1,6 +1,7 @@
 package com.bookshop.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bookshop.common.BusinessException;
 import com.bookshop.dto.BookRequest;
@@ -17,6 +18,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 
 import javax.annotation.PostConstruct;
 import java.util.Collections;
@@ -199,7 +201,27 @@ public class BookServiceImpl implements BookService {
         }
         return vo;
     }
-
+    @Override
+    public boolean deductStock(Integer bookId, int quantity) {
+        // 最多重试 3 次
+        for (int retry = 0; retry < 3; retry++) {
+            // ① 读：查当前库存和版本号（不加锁）
+            Book book = bookMapper.selectById(bookId);
+            if (book == null || book.getBooksNum() < quantity) {
+                return false;
+            }
+            
+            // ② 写：改库存，@Version 自动拼 WHERE version = 旧值
+            book.setBooksNum(book.getBooksNum() - quantity);
+            int rows = bookMapper.updateById(book);
+            
+            if (rows > 0) {
+                return true;  // 成功
+            }
+            // ③ 冲突：版本号变了，重试
+        }
+        return false;  // 重试耗尽
+    }
     private void copyProperties(BookRequest request, Book book) {
         book.setBookSn(request.getBookSn());
         book.setBookName(request.getBookName());
@@ -209,4 +231,5 @@ public class BookServiceImpl implements BookService {
         book.setBooksNum(request.getBooksNum());
         book.setBookCover(request.getBookCover());
     }
+
 }

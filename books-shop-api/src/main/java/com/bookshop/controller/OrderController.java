@@ -102,6 +102,18 @@ public class OrderController {
     }
 
     /**
+     * 取消订单 —— 仅待付款订单可取消（状态 → 已取消）。
+     */
+    @PutMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('user')")
+    public Result<Void> cancel(@PathVariable Integer id) {
+        LoginUser user = SecurityUtils.getCurrentUser();
+        orderService.cancel(id, user.getId());
+        log.info("用户取消订单: userId={}, orderId={}", user.getId(), id);
+        return Result.ok();
+    }
+
+    /**
      * 删除订单（物理删除）。
      *
      * <p>仅管理员可调用。</p>

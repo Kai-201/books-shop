@@ -3,6 +3,7 @@ package com.bookshop.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bookshop.common.BusinessException;
+import com.bookshop.config.RabbitMQConfig;
 import com.bookshop.dto.CartVO;
 import com.bookshop.dto.OrderVO;
 import com.bookshop.entity.Book;
@@ -13,6 +14,7 @@ import com.bookshop.mapper.BookMapper;
 import com.bookshop.mapper.OrderItemMapper;
 import com.bookshop.mapper.OrderMapper;
 import com.bookshop.mapper.UserMapper;
+import com.bookshop.service.BookService;
 import com.bookshop.service.CartService;
 import com.bookshop.service.OrderService;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 @Service
 public class OrderServiceImpl implements OrderService {
 
@@ -34,14 +36,18 @@ public class OrderServiceImpl implements OrderService {
     private final BookMapper bookMapper;
     private final UserMapper userMapper;
     private final CartService cartService;
-
+    private final BookService bookService;
+    private final RabbitTemplate rabbitTemplate;
     public OrderServiceImpl(OrderMapper orderMapper, OrderItemMapper orderItemMapper,
-                            BookMapper bookMapper, UserMapper userMapper, CartService cartService) {
+                            BookMapper bookMapper, UserMapper userMapper,
+                            CartService cartService, BookService bookService, RabbitTemplate rabbitTemplate) {
         this.orderMapper = orderMapper;
         this.orderItemMapper = orderItemMapper;
         this.bookMapper = bookMapper;
         this.userMapper = userMapper;
         this.cartService = cartService;
+        this.bookService = bookService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -74,8 +80,6 @@ public class OrderServiceImpl implements OrderService {
 
         for (CartVO item : cartItems) {
             Book book = bookMapper.selectById(item.getBookId());
-            book.setBooksNum(book.getBooksNum() - item.getQuantity());
-            bookMapper.updateById(book);
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrderId(order.getId());
@@ -161,6 +165,49 @@ public class OrderServiceImpl implements OrderService {
         stats.put("paid", all.stream().filter(o -> o.getStatus() == 1).count());
         stats.put("completed", all.stream().filter(o -> o.getStatus() == 2).count());
         return stats;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void pay(Integer orderId, Integer userId) {
+        // 1. 校验订单
+        OrderInfo order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw new BusinessException("订单不存在");
+        }
+        if (!order.getUserId().equals(userId)) {
+            throw new BusinessException("无权操作该订单");
+        }
+        if (order.getStatus() != 0) {
+            throw new BusinessException("订单状态不允许支付");
+        }
+
+        // 2. 发消息到 MQ，异步扣库存
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.ORDER_EXCHANGE,  // ① 发到哪个交换机
+                RabbitMQConfig.ORDER_PAY_KEY,   // ② 路由键（决定走哪条队列）
+                orderId);                       // ③ 消息体：订单ID
+
+        // 3. 更新订单状态为已付款
+        order.setStatus(1);
+        orderMapper.updateById(order);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancel(Integer orderId, Integer userId) {
+        OrderInfo order = orderMapper.selectById(orderId);
+        if (order == null) {
+            throw new BusinessException("订单不存在");
+        }
+        if (!order.getUserId().equals(userId)) {
+            throw new BusinessException("无权操作该订单");
+        }
+        if (order.getStatus() != 0) {
+            throw new BusinessException("只有待付款订单才能取消");
+        }
+        order.setStatus(3);
+        orderMapper.updateById(order);
     }
 
     private OrderVO toVO(OrderInfo order) {
