@@ -59,7 +59,7 @@
 import { ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import UserNav from "../components/UserNav.vue";
-import { getBooksPage } from "../api/book";
+import { getBooksPage, searchBooks } from "../api/book";
 import { getCategories } from "../api/category";
 import { useInventoryStore } from "../stores/inventory";
 
@@ -74,10 +74,19 @@ const uploaderType = ref("");
 const isSoldOut = (book) => inventory.getStock(book.id, book.booksNum) === 0;
 
 const loadBooks = async () => {
+  // 有关键词：走 ES 搜索（更快）
+  if (keyword.value && keyword.value.trim()) {
+    const res = await searchBooks(keyword.value);
+    if (res.data.code === 200) {
+      books.value = res.data.data || [];
+      inventory.setBooks(books.value);
+    }
+    return;
+  }
+  // 无关键词：走 MySQL 分页（分类筛选、来源筛选）
   const res = await getBooksPage({
     page: 1,
     size: 100,
-    keyword: keyword.value || undefined,
     categoryId: categoryId.value || undefined,
     uploaderType: uploaderType.value || undefined
   });

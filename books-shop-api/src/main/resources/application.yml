@@ -45,3 +45,11 @@ mybatis-plus:
 jwt:
   secret: bookshop-bookshop-bookshop-2026-secure-key
   expire-hours: 24
+
+
+elasticsearch:
+  host: localhost
+  port: 9200
+  username: elastic
+  password: 2qYaJiM24TB+W1zH3*Rg
+  fingerprint: 不用管

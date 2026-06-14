@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bookshop.common.BusinessException;
 import com.bookshop.common.LoginUser;
 import com.bookshop.common.Result;
+import com.bookshop.dto.BookDocument;
 import com.bookshop.dto.BookRequest;
 import com.bookshop.dto.BookVO;
 import com.bookshop.security.SecurityUtils;
+import com.bookshop.service.BookSearchService;
 import com.bookshop.service.BookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,15 +21,26 @@ import java.util.List;
 @RequestMapping("/books")
 public class BookController {
 
-    private final BookService bookService;  
+    private final BookService bookService;
+    private final BookSearchService bookSearchService;
 
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, BookSearchService bookSearchService) {
         this.bookService = bookService;
+        this.bookSearchService = bookSearchService;
     }
 
     @GetMapping
     public Result<List<BookVO>> list() {
         return Result.ok(bookService.listAll());
+    }
+
+    /**
+     * ES 全文搜索 —— 按书名、作者、编号多字段匹配。
+     * 请求示例：GET /api/books/search?keyword=Java
+     */
+    @GetMapping("/search")
+    public Result<List<BookDocument>> search(@RequestParam String keyword) {
+        return Result.ok(bookSearchService.search(keyword));
     }
 
     @GetMapping("/page")

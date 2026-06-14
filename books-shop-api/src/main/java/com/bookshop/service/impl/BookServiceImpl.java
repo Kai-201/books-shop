@@ -8,8 +8,10 @@ import com.bookshop.dto.BookRequest;
 import com.bookshop.dto.BookVO;
 import com.bookshop.entity.Book;
 import com.bookshop.entity.User;
+import com.bookshop.dto.BookDocument;
 import com.bookshop.mapper.BookMapper;
 import com.bookshop.mapper.UserMapper;
+import com.bookshop.service.BookSearchService;
 import com.bookshop.service.BookService;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
@@ -32,6 +34,7 @@ public class BookServiceImpl implements BookService {
 
     private final BookMapper bookMapper;
     private final UserMapper userMapper;
+    private final BookSearchService bookSearchService;
     /**
      * 布隆过滤器：缓存 id 是否存在，防止缓存穿透
      * 预计 10000 条数据，误判率 1%（误判时 DB 兜底）
@@ -54,9 +57,11 @@ public class BookServiceImpl implements BookService {
         return users.stream().collect(Collectors.toMap(User::getId, u -> u));
     }
 
-    public BookServiceImpl(BookMapper bookMapper, UserMapper userMapper) {
+    public BookServiceImpl(BookMapper bookMapper, UserMapper userMapper,
+                            BookSearchService bookSearchService) {
         this.bookMapper = bookMapper;
         this.userMapper = userMapper;
+        this.bookSearchService = bookSearchService;
     }
 //    初始化方法，启动时把现有图书 id 全部加载进去
     @PostConstruct
@@ -137,6 +142,8 @@ public class BookServiceImpl implements BookService {
         }
         bookMapper.insert(book);
         bloomFilter.put(book.getId());
+        // 同步到 ES
+        bookSearchService.sync(new BookDocument(book, uploaderId == null ? "管理员" : null));
     }
 
     @Override
@@ -156,6 +163,12 @@ public class BookServiceImpl implements BookService {
         book.setId(request.getId());
         book.setUploaderId(existing.getUploaderId());
         bookMapper.updateById(book);
+        // 同步到 ES
+        Book updated = bookMapper.selectById(book.getId());
+        if (updated != null) {
+            bookSearchService.sync(new BookDocument(updated,
+                    updated.getUploaderId() == null ? "管理员" : null));
+        }
     }
 
     @Override
@@ -167,6 +180,8 @@ public class BookServiceImpl implements BookService {
         }
         checkPermission(existing, operatorId, role);
         bookMapper.deleteById(id);
+        // 从 ES 删除
+        bookSearchService.remove(id);
     }
 
     private void checkPermission(Book book, Integer operatorId, String role) {

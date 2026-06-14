@@ -13,3 +13,5 @@ export const createBook = (data) => request.post("/books", data);
 export const updateBook = (id, data) => request.put(`/books/${id}`, data);
 
 export const deleteBook = (id) => request.delete(`/books/${id}`);
+
+export const searchBooks = (keyword) => request.get("/books/search", { params: { keyword } });
