@@ -46,9 +46,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 import UserNav from "../components/UserNav.vue";
 import AdminNav from "../components/AdminNav.vue";
 import { getOrderById, payOrder, cancelOrder } from "../api/order";
@@ -82,9 +84,42 @@ const cancel = async () => {
   }
 };
 
+// 从 JWT 解析 userId
+const getUserId = () => {
+  const token = localStorage.getItem("userToken");
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.id;
+  } catch { return null; }
+};
+
+// WebSocket：接收订单状态推送
+let stompClient = null;
+const connectWebSocket = () => {
+  const userId = getUserId();
+  if (!userId) return;
+  stompClient = new Client({
+    webSocketFactory: () => new SockJS("http://localhost:8080/api/ws"),
+    onConnect: () => {
+      stompClient.subscribe(`/topic/orders/${userId}`, (message) => {
+        ElMessage.success(`订单状态更新：${message.body}`);
+        loadOrder();
+      });
+    }
+  });
+  stompClient.activate();
+};
+
 const goBack = () => {
   router.push(isAdmin.value ? "/admin/orders" : "/orders");
 };
 
-onMounted(loadOrder);
+onMounted(() => {
+  loadOrder();
+  if (!isAdmin.value) connectWebSocket();
+});
+onBeforeUnmount(() => {
+  if (stompClient) stompClient.deactivate();
+});
 </script>

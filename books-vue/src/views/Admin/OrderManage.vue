@@ -56,9 +56,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 import AdminNav from "../../components/AdminNav.vue";
 import { getOrdersPage, updateOrderStatus, deleteOrder } from "../../api/order";
 
@@ -84,5 +86,22 @@ const removeOrder = async (id) => {
   if (res.data.code === 200) { ElMessage.success("删除成功"); loadOrders(); }
 };
 
-onMounted(loadOrders);
+// WebSocket：接收新订单通知
+let stompClient = null;
+onMounted(() => {
+  loadOrders();
+  stompClient = new Client({
+    webSocketFactory: () => new SockJS("http://localhost:8080/api/ws"),
+    onConnect: () => {
+      stompClient.subscribe("/topic/admin/orders", () => {
+        ElMessage.success("有新订单！");
+        loadOrders();
+      });
+    }
+  });
+  stompClient.activate();
+});
+onBeforeUnmount(() => {
+  if (stompClient) stompClient.deactivate();
+});
 </script>

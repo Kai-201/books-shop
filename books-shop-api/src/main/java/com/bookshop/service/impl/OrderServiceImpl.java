@@ -17,6 +17,8 @@ import com.bookshop.mapper.UserMapper;
 import com.bookshop.service.BookService;
 import com.bookshop.service.CartService;
 import com.bookshop.service.OrderService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -27,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
 @Service
 public class OrderServiceImpl implements OrderService {
 
@@ -38,9 +40,13 @@ public class OrderServiceImpl implements OrderService {
     private final CartService cartService;
     private final BookService bookService;
     private final RabbitTemplate rabbitTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
+
     public OrderServiceImpl(OrderMapper orderMapper, OrderItemMapper orderItemMapper,
                             BookMapper bookMapper, UserMapper userMapper,
-                            CartService cartService, BookService bookService, RabbitTemplate rabbitTemplate) {
+                            CartService cartService, BookService bookService,
+                            RabbitTemplate rabbitTemplate,
+                            SimpMessagingTemplate messagingTemplate) {
         this.orderMapper = orderMapper;
         this.orderItemMapper = orderItemMapper;
         this.bookMapper = bookMapper;
@@ -48,6 +54,7 @@ public class OrderServiceImpl implements OrderService {
         this.cartService = cartService;
         this.bookService = bookService;
         this.rabbitTemplate = rabbitTemplate;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -91,6 +98,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         cartService.clear(userId);
+        messagingTemplate.convertAndSend("/topic/admin/orders", "新订单");
         return order;
     }
 
@@ -140,6 +148,10 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setStatus(status);
         orderMapper.updateById(order);
+        // WebSocket 推送：通知用户订单状态变更
+        messagingTemplate.convertAndSend("/topic/orders/" + order.getUserId(), statusText(status));
+        // 同时通知管理员列表刷新
+        messagingTemplate.convertAndSend("/topic/admin/orders", "状态变更");
     }
 
     @Override
@@ -170,7 +182,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void pay(Integer orderId, Integer userId) {
-        // 1. 校验订单
         OrderInfo order = orderMapper.selectById(orderId);
         if (order == null) {
             throw new BusinessException("订单不存在");
@@ -182,15 +193,17 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("订单状态不允许支付");
         }
 
-        // 2. 发消息到 MQ，异步扣库存
         rabbitTemplate.convertAndSend(
-                RabbitMQConfig.ORDER_EXCHANGE,  // ① 发到哪个交换机
-                RabbitMQConfig.ORDER_PAY_KEY,   // ② 路由键（决定走哪条队列）
-                orderId);                       // ③ 消息体：订单ID
+                RabbitMQConfig.ORDER_EXCHANGE,
+                RabbitMQConfig.ORDER_PAY_KEY,
+                orderId);
 
-        // 3. 更新订单状态为已付款
         order.setStatus(1);
         orderMapper.updateById(order);
+        // WebSocket 推送：通知用户订单已付款
+        messagingTemplate.convertAndSend("/topic/orders/" + userId, "已付款");
+        // 同时通知管理员列表刷新
+        messagingTemplate.convertAndSend("/topic/admin/orders", "状态变更");
     }
 
     @Override
@@ -208,6 +221,10 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setStatus(3);
         orderMapper.updateById(order);
+        // WebSocket 推送：通知用户订单已取消
+        messagingTemplate.convertAndSend("/topic/orders/" + userId, "已取消");
+        // 同时通知管理员列表刷新
+        messagingTemplate.convertAndSend("/topic/admin/orders", "状态变更");
     }
 
     private OrderVO toVO(OrderInfo order) {

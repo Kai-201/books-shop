@@ -71,6 +71,8 @@ public class SecurityConfig {
             .authorizeRequests()
                 // Knife4j 文档页面放行
                 .antMatchers("/doc.html", "/swagger-resources/**", "/webjars/**", "/v2/api-docs/**", "/favicon.ico").permitAll()
+                // WebSocket 端点放行
+                .antMatchers("/ws/**").permitAll()
                 // 认证相关接口放行
                 .antMatchers("/auth/**").permitAll()
                 .antMatchers("/error").permitAll()
