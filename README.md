@@ -1,27 +1,36 @@
-# BooksShopManage
+# 二手书交易系统（旧书斋）
 
-二手书交易系统 — Spring Boot REST 后端
+Spring Boot + Vue3 全栈二手书电商平台。
 
-## 项目说明
+## 项目结构
 
-原 SSM + JSP 代码已移除，当前后端位于 `books-shop-api/` 目录。
+```
+books-shop-api/   — Spring Boot 后端（REST API）
+books-vue/        — Vue3 前端（Element Plus）
+建议.md           — 企业级升级方案
+```
 
 ## 快速开始
 
 ```bash
-# 初始化数据库
+# 1. 初始化数据库
 mysql -u root -p < books-shop-api/src/main/resources/schema.sql
 
-# 修改 books-shop-api/src/main/resources/application.yml 中的数据库密码
+# 2. 修改 application.yml 中的数据库密码
 
-# 启动
+# 3. 启动后端
 cd books-shop-api
 mvn spring-boot:run
+
+# 4. 启动前端
+cd books-vue
+npm install
+npm run dev
 ```
 
-服务地址：`http://localhost:8080/api`
+后端：`http://localhost:8080/api`
 
-详细接口文档见 [books-shop-api/README.md](books-shop-api/README.md)
+前端：`http://localhost:5173`
 
 ## 默认账号
 
@@ -32,7 +41,8 @@ mvn spring-boot:run
 
 ## 技术栈
 
-- Spring Boot 2.7
-- MyBatis-Plus
-- MySQL 8
-- JWT 鉴权
+**后端**：Spring Boot 2.7 · MyBatis-Plus · Spring Security · JWT · Redis · RabbitMQ · Elasticsearch · WebSocket
+
+**前端**：Vue3 · Element Plus · Vue Router · Pinia · Axios · SockJS/STOMP
+
+**数据库与中间件**：MySQL 8 · Redis · RabbitMQ · Elasticsearch
