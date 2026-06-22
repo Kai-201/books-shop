@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Memory Bank 使用规则
+
+**必须先读 memory-bank/index.md 理解项目结构，再按需读对应 business/*.md 文件。**
+
+不要直接盲读整个项目源码。
+
+每次修改代码后必须更新对应 memory-bank 文件。新增模块时创建新 md + 更新 index.md。
+
 ## Project Overview
 
 Second-hand bookstore platform — Spring Boot 2.7 backend (`books-shop-api/`) + Vue3 frontend (`books-vue/`). Two roles: regular users (browse, upload, cart, order, pay) and admins (manage books, users, orders, dashboard).
